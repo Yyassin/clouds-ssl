@@ -41,7 +41,6 @@ for model_name in model_paths:
     model = timm.create_model("vit_small_patch16_384.augreg_in21k_ft_in1k", pretrained=True).to("cuda:0")
     model = model.eval()
     is_remoco = "remoco" in model_name
-    print(is_remoco)
     if is_remoco:
         pre = JEPA(enc=model, M=4, device="cuda:0").to("cuda:0")
     else:

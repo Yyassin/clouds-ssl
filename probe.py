@@ -5,12 +5,12 @@ import os
 import torch
 import csv
 
-embed_root_dir = "./embeddings"
+embed_root_dir = "./eval/embeddings"
 embed_paths = os.listdir(os.path.abspath(embed_root_dir))
 embed_paths = [f"{embed_root_dir}/{x}" for x in embed_paths]
 embed_paths = [x for x in embed_paths if not os.path.isdir(x)]
 
-# Cross-validation settings.
+# Cross-validation settings
 n_splits_list = [293] # Leave one out
 
 for n_splits in n_splits_list:
@@ -43,12 +43,14 @@ for n_splits in n_splits_list:
         
 
         entry = [embed_path.split("/")[-1], n_splits] + ["k=20"] + all_knn_20.tolist() + [all_knn_20_mean]
+        model_name = embed_path.split("/")[-1].split(".pt")[0]
 
-        print(embed_path, n_splits, "k=20", all_knn_20_mean)
+        save_dir = "./eval/probe"
+        if not os.path.exists(os.path.abspath(save_dir)):
+            os.makedirs(os.path.abspath(save_dir))
 
-        # with open(fr'.probe/{embed_path[]}_loo_20.csv', 'a') as f:
-        #     writer = csv.writer(f)
-        #     writer.writerow(entry)
+        with open(os.path.abspath(fr'{save_dir}/{model_name}_loo_20.csv'), 'a') as f:
+            writer = csv.writer(f)
+            writer.writerow(entry)
             
-        # print(embed_path, n_splits)
-
+        print(embed_path, n_splits)
