@@ -1,7 +1,5 @@
 import os
-from torchvision import transforms
 from torch.utils.data import DataLoader
-import pickle
 import torch
 import timm
 from eval_util import knn

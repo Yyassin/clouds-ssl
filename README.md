@@ -1,28 +1,67 @@
-# Cloud Particles: A Carleton University and NRC collaboration
-This repository contains the final implementation and training script.
+# Clouds-SSL
 
-Below is a _brief_ explanation of the repository.
+Official PyTorch codebase for _Soft Contrastive Representation Learning for Cloud-particle Images Captured In-Flight by the New HVPS-4 Airborne Probe_.
 
-### Main directory:
+Available on arXiv: Link available soon
 
-single_gpu_train_v2.py → Trains vision transformer models using the MoCo V3 self-supervised learning framework on a single GPU.
+## Usage
 
-training.py → Implements some helper functions needed for training (right now, just learning rate scheduler).
+This repository contains code to train and evaluate all the models described in the paper. We have also released pretrained weights for the best performing hyperparameters under each model, alongside pre-processed training and annotated data.
 
-dataview.ipynb → Jupyter notebook that demonstrates creating the 384x384px images from NetCDF files.
+### Installation
 
-### models directory:
+To get started using the repository, install the dependencies specified in the `requirements.txt` file (some sort of virtual environment is recommended):
+```bash
+$ python -m venv ./venv
+$ ./venv/Scripts/activate
+$ pip install requirements.txt
+```
 
-mocov3.py → Implementation of the MoCo V3 framework.
+Then install the data, and pretrained models using git-lfs (make sure you have git-lfs installed):
+```bash
+$ sudo apt install git-lfs -y
+$ git lfs install
+$ git lfs pull
+```
+### Code Structure
 
-vision_transformer.py → Implementation of the vision transformer network.
+```
+.
+├── annotated_images                    # contains images used for evaluation
+├── annotations.csv                     # contains the labels for select images from the folder above
+├── eval                                # saved evaluation results (embeddings, and probing MAEs)
+├── filtered_data                       # contains pre-processed training data
+├── saved_models                        # contains pre-trained weights for each of the 4 models in the paper
+├── v2                                  # dataloading helpers. Only TorchDataset is really relevant.
+├── eval_util.py, probe.py, embed.py    # evaluation helpers
+└── single_gpu_train_*.py               # training scripts for moco (v2), soft-moco (soft), and remoco (jepa).
+```
 
-### v2 directory (data preprocessing and loading):
+### Training
 
-PixelsFilterV2.py → Accepts the frame buffer from a NetCDF and filters it to remove streaks.
+To start training a model, run the according `single_gpu_train_*.py` script:
 
-DataView.py → Constructs 384x384px image "clips" from a frame buffer, and provides an interface to index them.
+```bash
+$ python single_gpu_train_v2.py
+```
 
-ChannelDataset.py → Aggregates dataviews across multiple flight files, for a specific sensor channel, into a single dataset.
+which will iterate over, and train a model for each member of the specified cartesian product of hyperparameters. Models will be saved in `saved_models`.
 
-TorchDataset.py → A torch dataset wrapper for the channel dataset. Generates positive pairs, and transforms images to be ready for training.
+### Evaluation
+
+To evaluate a model, we first extract its embeddings/representations for each image in evaluation set using the `embed.py` script. These embeddings are saved in the `eval/embeddings` directory.
+
+We then run the `probe.py` script, pointing to these embeddings to train a KNN regressor on the embeddings. The class-wise, and average MAEs are saved under `eval/probe`.
+
+Running `embed.py`, followed by `probe.py` will generate the probing results for each model saved under `saved_models`.
+
+
+## Please Cite
+
+```
+@inproceedings{yassin2024clouds,
+  title={Soft Contrastive Representation Learning for Cloud-particle Images Captured In-Flight by the New HVPS-4 Airborne Probe},
+  author={Yassin, Yousef and Fuller, Anthony and Ranjbar, Keyvan and Bala, Kenny and Nichman, Leonid and Green, James R},
+  year={2024}
+}
+```

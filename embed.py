@@ -9,7 +9,7 @@ from models.mocov3 import MoCoV3
 from models.remoco import JEPA
 
 
-# load labels
+# Load labels
 data = []
 with open(os.path.abspath('./annotations.csv'), 'r') as file:
     csv_reader = csv.reader(file)
@@ -22,7 +22,7 @@ with open(os.path.abspath('./annotations.csv'), 'r') as file:
                 entry.append(float(elem))
         data.append(entry)
 
-# load images
+# Load images
 all_data = []
 for i, item in enumerate(data):
     image = Image.open(os.path.abspath(f"./annotated_images/{item[0]}"))
@@ -30,13 +30,13 @@ for i, item in enumerate(data):
     annotation = item[1:]
     all_data.append([tensor, annotation])
 
-# load models
+# Load models
 model_root_dir = "./saved_models"
 model_paths = os.listdir(os.path.abspath(model_root_dir))
 model_paths = [f"{model_root_dir}/{x}" for x in model_paths]
 model_paths = [x for x in model_paths if not os.path.isdir(x)]
 
-# get embeddings
+# Get embeddings
 for model_name in model_paths:
     model = timm.create_model("vit_small_patch16_384.augreg_in21k_ft_in1k", pretrained=True).to("cuda:0")
     model = model.eval()
@@ -61,7 +61,7 @@ for model_name in model_paths:
                 embeds = pre.student_encoder.forward_features(image)
             else:
                 embeds = pre.encoder_q.forward_features(image)
-            embeds = embeds[:, 1:, :].mean(dim=1)  # global average pool
+            embeds = embeds[:, 1:, :].mean(dim=1)  # Global average pool
             all_embeds.append(embeds.cpu())
             all_labels.append(torch.tensor(annotation).unsqueeze(dim=0))
     
